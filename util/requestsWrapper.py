@@ -13,6 +13,7 @@ class ReqWrapper:
         cls._session = requests.Session()
 
     def get(self, url, **kwargs):
+        print(url,**kwargs)
         retry = 5
         while True:
             try:

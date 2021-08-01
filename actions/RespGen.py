@@ -6,14 +6,16 @@ class RespGen:
         self.bot = None
         self.map = {}
         # load responses
-        with open('words.txt', "r", encoding='utf-8') as file:
+        with open('./words.txt', "r", encoding='utf-8') as file:
             lines = file.readlines()
             i = 0
+            print(len(lines))
             while i < len(lines):
                 titles = lines[i].strip().split('/')
-                i += 1
+                print(titles,len(lines[i].strip()))
+                # i += 1
                 resps = []
-                while len(lines[i].strip()) > 0:
+                while i<len(lines) and len(lines[i].strip()) > 0:
                     resps.append(lines[i].strip())
                     i += 1
                 for t in titles:
@@ -23,7 +25,7 @@ class RespGen:
                     i += 1
 
         self.li = []
-        with open('', "r", encoding='utf-8') as file:
+        with open('response.txt', "r", encoding='utf-8') as file:
             lines = file.readlines()
             for l in lines:
                 l = l.strip()
@@ -34,9 +36,9 @@ class RespGen:
         self.possibles = self.map.keys()
 
     def getResp(self, ques: str, userID: str):
-        rsp = self.bot.getAnws(ques, userID)
-        if len(rsp) > 0:
-            return rsp
+        # rsp = self.bot.getAnws(ques, userID)
+        # if len(rsp) > 0:
+        #     return rsp
 
         keyword = None
         for match in self.possibles:

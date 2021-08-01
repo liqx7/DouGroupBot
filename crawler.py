@@ -43,8 +43,13 @@ def login(url, pwd, userName, session):
 
 
 def composeCmnt(session, response):
-    cmntForm = {'ck': '', 'rv_comment': response['ans'],
-                'start': 0, 'submit_btn': '发送'}
+    print(response)
+    cmntForm = {
+      'ck': '', 
+      # 'rv_comment':  response['ans'],
+'rv_comment':  response,
+                'start': 0, 
+                'submit_btn': '发送'}
     cmntForm['ck'] = DouUtil.getCkFromCookies(session)
     return cmntForm
 
@@ -61,7 +66,10 @@ def prepareCaptcha(data, session, postUrl, r=None) -> dict:
 def postCmnt(session, postUrl, request, response):
     data = composeCmnt(session._session, response)
     cmntUrl = postUrl + 'add_comment'
-    r = session.post(cmntUrl, data=data, headers={'Referer': postUrl}, files=response.get('files'))
+    print(response)
+    # r = session.post(cmntUrl, data=data, headers={'Referer': postUrl}, files=response.get('files'))
+    r = session.post(cmntUrl, data=data, headers={'Referer': postUrl})
+    print(r,etree.HTML(r.text))
     # r = session.get(postUrl)
     code = str(r.status_code)
     if (code.startswith('4') or code.startswith('5')) and not code.startswith('404'):
@@ -99,8 +107,11 @@ def postCmnt(session, postUrl, request, response):
 
 
 def main():
+    # 生成回复
     respGen = RespGen.RespGen()
+    # 同步队列
     q = SimpleQueue()
+    # 获取密码配置等
     cred = DouUtil.getCred()
     pwd = cred['pwd']
     userName = cred['userName']
@@ -144,8 +155,9 @@ def main():
                 sleepCmnt = random.randint(20, 30)
                 log.debug("sleep cmnt: ", sleepCmnt)
 
-
+                # 记录回过的帖子
                 recorder.write(postUrl.split('/')[5] + '\n')
+                # 回复记录
                 record = question + ': ' + resp['ans'] + '\n'
                 file.write(record)
 

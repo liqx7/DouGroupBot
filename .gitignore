@@ -149,7 +149,7 @@ pip-selfcheck.json
 # End of https://www.gitignore.io/api/git,venv,python,visualstudiocode
 
 crawler-venv/
-resources/
-confidentials/
+# resources/
+# confidentials/
 *.log
 .idea/

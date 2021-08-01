@@ -13,7 +13,7 @@ class NewPostSelector:
         self.loadHistoFromFile()
 
     def select(self):
-        groupUrl = 'https://www.douban.com/group/groupID/'
+        groupUrl = 'https://www.douban.com/group/726716/'
         time.sleep(5)
         items = self.getItems(groupUrl)
         self.putItems(items)
@@ -56,7 +56,7 @@ class NewPostSelector:
                     continue
                 self.histo.add(l)
 
-    def loadHistoFromWeb(self, url='https://www.douban.com/group/groupID/'):
+    def loadHistoFromWeb(self, url='https://www.douban.com/group/726716/'):
         newSet = set()
         time.sleep(5)
         r = self.s.get(url)
