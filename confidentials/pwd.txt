@@ -1,2 +1,2 @@
-userName=''
-pwd=''
+userName=warrie@163.com
+pwd=lll123456

@@ -6,21 +6,25 @@ class RespGen:
         self.bot = None
         self.map = {}
         # load responses
-        with open('./words.txt', "r", encoding='utf-8') as file:
+        with open('words.txt', "r", encoding='utf-8') as file:
             lines = file.readlines()
             i = 0
-            print(len(lines))
+            # print(len(lines))
             while i < len(lines):
                 titles = lines[i].strip().split('/')
-                print(titles,len(lines[i].strip()))
+                # print(titles,len(lines[i].strip()))
                 # i += 1
+
+                # 回复列表，把每一行回复都加进去
                 resps = []
                 while i<len(lines) and len(lines[i].strip()) > 0:
                     resps.append(lines[i].strip())
                     i += 1
+                # 每一行的/分割的关键词都映射到这一行
                 for t in titles:
                     self.map[t] = resps
 
+                # 空行跳过
                 while i < len(lines) and len(lines[i].strip()) <= 0:
                     i += 1
 

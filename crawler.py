@@ -1,3 +1,4 @@
+from typing import Collection
 import requests
 from lxml import etree
 import time
@@ -57,30 +58,34 @@ def composeCmnt(session, response):
 def prepareCaptcha(data, session, postUrl, r=None) -> dict:
     pic_url, pic_id = DouUtil.getCaptchaInfo(session, postUrl, r)
     verifyCode = ''
+    # 图片保存到本地，返回文件名
     pic_path = DouUtil.save_pic_to_disk(pic_url, session)
     log.debug(pic_url, pic_path)
     verifyCode = DouUtil.getTextFromPic(pic_path)
     return data
+    # return verifyCode
 
 
 def postCmnt(session, postUrl, request, response):
     data = composeCmnt(session._session, response)
     cmntUrl = postUrl + 'add_comment'
-    print(response)
+    print('response: ', response)
     # r = session.post(cmntUrl, data=data, headers={'Referer': postUrl}, files=response.get('files'))
     r = session.post(cmntUrl, data=data, headers={'Referer': postUrl})
-    print(r,etree.HTML(r.text))
+    print(r,etree.HTML(r.content))
     # r = session.get(postUrl)
     code = str(r.status_code)
+    
     if (code.startswith('4') or code.startswith('5')) and not code.startswith('404'):
         log.error(r.status_code)
         raise Exception
-    elif 0 != len(etree.HTML(r.text).xpath("")):
+    # 获取验证码
+    elif 0 != len(etree.HTML(r.content).xpath("//img[@id='captcha_image']")):
         log.warning(r.status_code)
         data = prepareCaptcha(data, session, postUrl, r)
         r = session.post(cmntUrl, data=data)
         retry = 1
-        while 0 != len(etree.HTML(r.text).xpath("")):
+        while 0 != len(etree.HTML(r.content).xpath("//img[@id='captcha_image']")):
             if retry <= 0:
                 retry -= 1
                 break
@@ -98,7 +103,7 @@ def postCmnt(session, postUrl, request, response):
 
             r = session.post(cmntUrl, data=data)
             if 0 != len(
-                    etree.HTML(r.text).xpath("")):
+                    etree.HTML(r.content).xpath("")):
                 raise Exception
 
         log.info("Success.", request + '  --' + data['rv_comment'])
@@ -109,6 +114,7 @@ def postCmnt(session, postUrl, request, response):
 def main():
     # 生成回复
     respGen = RespGen.RespGen()
+    
     # 同步队列
     q = SimpleQueue()
     # 获取密码配置等
@@ -116,6 +122,8 @@ def main():
     pwd = cred['pwd']
     userName = cred['userName']
     loginReqUrl = ''
+
+    print('---1---',pwd,userName)
 
     # s = requests.Session()
     reqWrapper = requestsWrapper.ReqWrapper()
@@ -127,13 +135,17 @@ def main():
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
     })
+    print('----2----',DouUtil.loadCookies())
     s.cookies.update(DouUtil.loadCookies())
 
     slctr = NewPostSelector.NewPostSelector(q, reqWrapper)
+
+    print('----3----',slctr)
     timeToSleep = 5
     combo = 0
 
     while True:
+        # 要回复的队列
         q = slctr.select()
         if q.qsize() == 0:
             log.debug("sleep fro emty queue: ", timeToSleep)
@@ -147,9 +159,13 @@ def main():
 
             while q.qsize() > 0:
                 tup = q.get(timeout=3)
-                question, postUrl, dajie = tup[0], tup[1], tup[2]
+                #标题 网址 
+                question, postUrl, userID = tup[0], tup[1], tup[2]
+                print('----5---',question, postUrl, userID)
 
-                resp = respGen.getResp(question, dajie)
+                resp = respGen.getResp(question, userID)
+                print('----6---',resp)
+                
                 postCmnt(reqWrapper, postUrl, question, resp)
 
                 sleepCmnt = random.randint(20, 30)
@@ -158,7 +174,9 @@ def main():
                 # 记录回过的帖子
                 recorder.write(postUrl.split('/')[5] + '\n')
                 # 回复记录
-                record = question + ': ' + resp['ans'] + '\n'
+                # record = question + ': ' + resp['ans'] + '\n'
+                record = question + ': ' + resp + '\n'
+                print('-----record----',record)
                 file.write(record)
 
         except Empty:

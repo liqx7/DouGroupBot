@@ -95,13 +95,13 @@ def getCaptchaInfo(session, postUrl, r=None):
     r = session.get(postUrl)
     # error handling
     html = etree.HTML(r.text)
-    pic_url = html.xpath("")
-    pic_id = html.xpath("")
+    pic_url = html.xpath("//img[@id='captcha_image']")
+    pic_id = html.xpath("//img[@id='captcha_image']")
     return pic_url[0], pic_id[0]
 
 def parseCaptchaInfo(r):
     html = etree.HTML(r.text)
-    pic_url = html.xpath("")
+    pic_url = html.xpath("//img[@id='captcha_image']")
     pic_id = html.xpath("")
     return pic_url[0], pic_id[0]
 
